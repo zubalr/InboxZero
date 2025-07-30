@@ -59,7 +59,7 @@ export function MessageComposer({
   const draftTimer = useRef<NodeJS.Timeout | null>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
-  const sendReply = useMutation(api["email-new"].sendReply);
+  const sendReply = useMutation(api.email.sendReply);
 
   // Extract reply recipients from thread participants
   const fromParticipant = thread.participants.find((p) => p.type === 'from');

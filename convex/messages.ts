@@ -160,9 +160,11 @@ export const create = mutation({
       sanitizedTextContent || '',
       args.from.email,
       args.from.name || '',
-      args.to.map(t => `${t.email} ${t.name || ''}`).join(' '),
-      args.cc?.map(c => `${c.email} ${c.name || ''}`).join(' ') || '',
-    ].join(' ').toLowerCase();
+      args.to.map((t) => `${t.email} ${t.name || ''}`).join(' '),
+      args.cc?.map((c) => `${c.email} ${c.name || ''}`).join(' ') || '',
+    ]
+      .join(' ')
+      .toLowerCase();
 
     // Atomic operation: Create message and update thread
     const messageId = await ctx.db.insert('messages', {
@@ -289,8 +291,10 @@ export const createMessage = mutation({
       args.textContent || '',
       args.from.email,
       args.from.name || '',
-      args.to.map(t => `${t.email} ${t.name || ''}`).join(' '),
-    ].join(' ').toLowerCase();
+      args.to.map((t) => `${t.email} ${t.name || ''}`).join(' '),
+    ]
+      .join(' ')
+      .toLowerCase();
 
     const messageId = await ctx.db.insert('messages', {
       ...args,
@@ -406,7 +410,9 @@ export const listForThread = query({
 
     // Calculate pagination metadata
     const hasMore = messages.length === limit;
-    const nextCursor = hasMore ? messages[messages.length - 1]._id : null;
+    const nextCursor = hasMore
+      ? messages[messages.length - 1]._id.toString()
+      : undefined;
 
     // Get total count efficiently (only when needed)
     let total = messages.length;

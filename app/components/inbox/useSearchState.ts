@@ -32,7 +32,7 @@ export function useSearchState() {
   const router = useRouter();
   const searchParams = useNextSearchParams();
   const pathname = usePathname();
-  
+
   const logSearch = useMutation(api.search.logSearch);
   const logSearchClick = useMutation(api.search.logSearchClick);
 
@@ -47,7 +47,8 @@ export function useSearchState() {
       tags: searchParams.get('tags')?.split(',').filter(Boolean) || [],
       participants: searchParams.get('participants') || undefined,
       sortBy: searchParams.get('sortBy') || 'relevance',
-      searchType: (searchParams.get('searchType') as 'threads' | 'messages') || 'threads',
+      searchType:
+        (searchParams.get('searchType') as 'threads' | 'messages') || 'threads',
     };
   });
 
@@ -58,11 +59,13 @@ export function useSearchState() {
   });
 
   const [isLoading, setIsLoading] = useState(false);
-  const [currentSearchHistoryId, setCurrentSearchHistoryId] = useState<string | null>(null);
+  const [currentSearchHistoryId, setCurrentSearchHistoryId] = useState<
+    string | null
+  >(null);
 
   // Generate a session ID for search analytics
-  const [sessionId] = useState(() => 
-    Math.random().toString(36).substring(2) + Date.now().toString(36)
+  const [sessionId] = useState(
+    () => Math.random().toString(36).substring(2) + Date.now().toString(36)
   );
 
   // Update URL when search state changes
@@ -105,7 +108,9 @@ export function useSearchState() {
         params.set('searchType', updatedState.searchType);
       }
 
-      const newUrl = params.toString() ? `${pathname}?${params.toString()}` : pathname;
+      const newUrl = params.toString()
+        ? `${pathname}?${params.toString()}`
+        : pathname;
       router.replace(newUrl);
     },
     [searchState, pathname, router]
@@ -152,8 +157,12 @@ export function useSearchState() {
       };
 
       if (savedSearch.filters.dateRange) {
-        newState.startDate = new Date(savedSearch.filters.dateRange.startDate).toISOString().split('T')[0];
-        newState.endDate = new Date(savedSearch.filters.dateRange.endDate).toISOString().split('T')[0];
+        newState.startDate = new Date(savedSearch.filters.dateRange.startDate)
+          .toISOString()
+          .split('T')[0];
+        newState.endDate = new Date(savedSearch.filters.dateRange.endDate)
+          .toISOString()
+          .split('T')[0];
       }
 
       updateURL(newState);
@@ -164,14 +173,16 @@ export function useSearchState() {
   // Get current filters for API calls
   const getCurrentFilters = useCallback(() => {
     const filters: any = {};
-    
+
     if (searchState.status) filters.status = searchState.status;
     if (searchState.priority) filters.priority = searchState.priority;
     if (searchState.assignee) filters.assignedTo = searchState.assignee;
-    if (searchState.participants) filters.participant = searchState.participants;
-    if (searchState.tags && searchState.tags.length > 0) filters.tags = searchState.tags;
+    if (searchState.participants)
+      filters.participant = searchState.participants;
+    if (searchState.tags && searchState.tags.length > 0)
+      filters.tags = searchState.tags;
     if (searchState.sortBy) filters.sortBy = searchState.sortBy;
-    
+
     if (searchState.startDate && searchState.endDate) {
       filters.dateRange = {
         startDate: new Date(searchState.startDate).getTime(),
@@ -206,8 +217,8 @@ export function useSearchState() {
       if (currentSearchHistoryId) {
         try {
           await logSearchClick({
-            historyId: currentSearchHistoryId,
-            threadId,
+            historyId: currentSearchHistoryId as any,
+            threadId: threadId as any,
           });
         } catch (error) {
           console.warn('Failed to log search click:', error);
@@ -241,7 +252,7 @@ export function useSearchState() {
     searchResults,
     isLoading,
     sessionId,
-    
+
     // Actions
     updateURL,
     clearSearch,
@@ -249,11 +260,11 @@ export function useSearchState() {
     getCurrentFilters,
     logCurrentSearch,
     logResultClick,
-    
+
     // Computed
     hasActiveFilters: hasActiveFilters(),
     hasSearchCriteria: hasSearchCriteria(),
-    
+
     // Setters
     setSearchResults,
     setIsLoading,

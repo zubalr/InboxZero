@@ -294,7 +294,9 @@ export const listThreads = query({
 
     // Add pagination metadata
     const hasMore = threads.length === limit;
-    const nextCursor = hasMore ? threads[threads.length - 1]._id : null;
+    const nextCursor = hasMore
+      ? threads[threads.length - 1]._id.toString()
+      : undefined;
 
     return {
       threads,
@@ -844,8 +846,8 @@ export const searchThreads = query({
     const paginatedResults = filteredResults.slice(0, limit);
     const hasMore = filteredResults.length > limit;
     const nextCursor = hasMore
-      ? paginatedResults[paginatedResults.length - 1]._id
-      : null;
+      ? paginatedResults[paginatedResults.length - 1]._id.toString()
+      : undefined;
 
     // Generate optimized snippets
     const enhancedResults = paginatedResults.map((thread) => {

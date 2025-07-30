@@ -11,8 +11,12 @@ export function NotionSettings({ teamId }: NotionSettingsProps) {
   const [apiKey, setApiKey] = useState('');
   const [databaseId, setDatabaseId] = useState('');
 
-  const storeCredentials = useMutation(api.integrations.storeNotionCredentialsPublic);
-  const notionIntegration = useQuery(api.integrations.getNotionIntegration, { teamId });
+  const storeCredentials = useMutation(
+    api.integrations.storeNotionCredentialsPublic
+  );
+  const notionIntegration = useQuery(api.integrations.getNotionIntegration, {
+    teamId,
+  });
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -30,11 +34,15 @@ export function NotionSettings({ teamId }: NotionSettingsProps) {
       {notionIntegration?.isActive ? (
         <p className="text-green-600">Notion is connected.</p>
       ) : (
-        <p className="text-gray-500">Connect to Notion to create tasks directly from your inbox.</p>
+        <p className="text-gray-500">
+          Connect to Notion to create tasks directly from your inbox.
+        </p>
       )}
       <form onSubmit={handleSubmit} className="space-y-4 mt-4">
         <div>
-          <label htmlFor="apiKey" className="block text-sm font-medium">Notion API Key</label>
+          <label htmlFor="apiKey" className="block text-sm font-medium">
+            Notion API Key
+          </label>
           <input
             type="password"
             id="apiKey"
@@ -45,7 +53,9 @@ export function NotionSettings({ teamId }: NotionSettingsProps) {
           />
         </div>
         <div>
-          <label htmlFor="databaseId" className="block text-sm font-medium">Notion Database ID</label>
+          <label htmlFor="databaseId" className="block text-sm font-medium">
+            Notion Database ID
+          </label>
           <input
             type="text"
             id="databaseId"
@@ -55,7 +65,10 @@ export function NotionSettings({ teamId }: NotionSettingsProps) {
             className="w-full p-2 border rounded mt-1"
           />
         </div>
-        <button type="submit" className="p-2 bg-blue-600 text-white rounded hover:bg-blue-700">
+        <button
+          type="submit"
+          className="p-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+        >
           Save Settings
         </button>
       </form>

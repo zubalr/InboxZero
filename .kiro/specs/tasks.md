@@ -295,7 +295,7 @@
   - Create performance and load testing suite
   - _Requirements: All requirements - testing and quality_
 
-- [-] 9.1 Unit Testing for Backend Functions
+- [x] 9.1 Unit Testing for Backend Functions
 
   - Write tests for all Convex queries, mutations, and actions
   - Create mock data and test fixtures for consistent testing
@@ -303,7 +303,7 @@
   - Implement automated testing in CI/CD pipeline
   - _Requirements: All requirements - backend testing_
 
-- [ ] 9.2 Integration and End-to-End Testing
+- [-] 9.2 Integration and End-to-End Testing
 
   - Create integration tests for email ingestion and sending workflows
   - Add tests for AI service integration with mocked responses

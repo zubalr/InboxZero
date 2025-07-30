@@ -29,9 +29,10 @@ export function AISummary({ threadId }: AISummaryProps) {
   useEffect(() => {
     if (thread?.summary) {
       setSummary(thread.summary.content);
-      setActionItems(thread.summary.actionItems || []);
       setLastGenerated(new Date(thread.summary.generatedAt));
-      setUserFeedback(thread.summary.userFeedback || null);
+      // actionItems and userFeedback are not part of the cached summary
+      setActionItems([]);
+      setUserFeedback(null);
     }
   }, [thread]);
 

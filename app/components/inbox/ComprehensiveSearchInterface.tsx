@@ -148,9 +148,7 @@ export function ComprehensiveSearchInterface({
             <SearchBarEnhanced
               value={searchState.query || ''}
               onChange={(value) => updateURL({ query: value })}
-              onSearch={() =>
-                logCurrentSearch(enhancedResults?.total || 0)
-              }
+              onSearch={() => logCurrentSearch(enhancedResults?.total || 0)}
               placeholder="Search emails, subjects, participants..."
               isLoading={isLoading}
               enableSuggestions={true}
@@ -217,7 +215,7 @@ export function ComprehensiveSearchInterface({
           {/* Search Results */}
           {hasSearchCriteria && (
             <SearchResults
-              results={enhancedResults?.threads || []}
+              results={enhancedResults?.results || []}
               onResultClick={(threadId) => {
                 logResultClick(threadId);
                 onThreadSelect(threadId);

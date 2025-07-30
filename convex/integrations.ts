@@ -1,5 +1,5 @@
 import { v } from 'convex/values';
-import { internal } from './_generated/api';
+import { api, internal } from './_generated/api';
 import { getAuthUserId } from '@convex-dev/auth/server';
 import {
   ActionCtx,
@@ -60,9 +60,41 @@ export const storeNotionCredentialsPublic = mutation({
     apiKey: v.string(),
     databaseId: v.string(),
   },
+  returns: v.null(),
   handler: async (ctx, args) => {
-    // Call the internal mutation
-    return await ctx.runMutation(internal.integrations.storeNotionCredentials, args);
+    // Duplicate the logic from internal function to avoid circular reference
+    const existingIntegration = await ctx.db
+      .query('integrations')
+      .withIndex('by_team_and_platform', (q) =>
+        q.eq('teamId', args.teamId).eq('platform', 'notion')
+      )
+      .first();
+
+    if (existingIntegration) {
+      await ctx.db.patch(existingIntegration._id, {
+        configuration: {
+          apiKey: args.apiKey,
+          databaseId: args.databaseId,
+        },
+        isActive: true,
+        updatedAt: Date.now(),
+      });
+    } else {
+      await ctx.db.insert('integrations', {
+        teamId: args.teamId,
+        platform: 'notion',
+        name: 'Notion Integration',
+        configuration: {
+          apiKey: args.apiKey,
+          databaseId: args.databaseId,
+        },
+        isActive: true,
+        createdAt: Date.now(),
+        updatedAt: Date.now(),
+      });
+    }
+
+    return null;
   },
 });
 
@@ -97,10 +129,11 @@ export const createTaskInNotion = internalAction({
     }
 
     const notionIntegration: any = await ctx.runQuery(
-      internal.integrations.getNotionIntegration,
-      { teamId: task.teamId }
+      api.integrations.getNotionIntegration,
+      {
+        teamId: task.createdBy?.teamId || task.teamId,
+      }
     );
-
     if (
       !notionIntegration?.configuration.apiKey ||
       !notionIntegration?.configuration.databaseId
@@ -109,7 +142,9 @@ export const createTaskInNotion = internalAction({
     }
 
     const { Client } = require('@notionhq/client');
-    const notion: any = new Client({ auth: notionIntegration.configuration.apiKey });
+    const notion: any = new Client({
+      auth: notionIntegration.configuration.apiKey,
+    });
 
     try {
       const response: any = await notion.pages.create({
@@ -287,15 +322,19 @@ export const listTasksForThread = query({
 
 // Get integration by team and platform
 export const getByTeamAndPlatform = query({
-  args: { 
+  args: {
     teamId: v.id('teams'),
-    platform: v.union(v.literal('notion'), v.literal('asana'), v.literal('clickup'))
+    platform: v.union(
+      v.literal('notion'),
+      v.literal('asana'),
+      v.literal('clickup')
+    ),
   },
   returns: v.any(),
   handler: async (ctx, args) => {
     return await ctx.db
       .query('integrations')
-      .withIndex('by_team_and_platform', (q) => 
+      .withIndex('by_team_and_platform', (q) =>
         q.eq('teamId', args.teamId).eq('platform', args.platform)
       )
       .first();
@@ -356,7 +395,7 @@ export const syncIntegration = mutation({
     }
 
     await ctx.db.patch(integration._id, {
-            lastSyncAt: Date.now(),
+      lastSyncAt: Date.now(),
       updatedAt: Date.now(),
     });
 
@@ -440,7 +479,7 @@ export const storeClickUpCredentials = mutation({
       await ctx.db.patch(existingIntegration._id, {
         configuration: {
           apiKey: args.apiKey,
-                    spaceId: args.spaceId,
+          spaceId: args.spaceId,
           listId: args.listId,
         },
         isActive: true,
@@ -453,7 +492,7 @@ export const storeClickUpCredentials = mutation({
         name: 'ClickUp',
         configuration: {
           apiKey: args.apiKey,
-                    spaceId: args.spaceId,
+          spaceId: args.spaceId,
           listId: args.listId,
         },
         isActive: true,
@@ -507,7 +546,7 @@ export const testAsanaConnection = mutation({
 
     // In a real implementation, you would test the actual API connection here
     await ctx.db.patch(integration._id, {
-            lastSyncAt: Date.now(),
+      lastSyncAt: Date.now(),
       updatedAt: Date.now(),
     });
 
@@ -532,7 +571,7 @@ export const testClickUpConnection = mutation({
 
     // In a real implementation, you would test the actual API connection here
     await ctx.db.patch(integration._id, {
-            lastSyncAt: Date.now(),
+      lastSyncAt: Date.now(),
       updatedAt: Date.now(),
     });
 

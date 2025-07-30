@@ -51,7 +51,11 @@ export const createInternalTask = mutation({
     ),
     externalIntegration: v.optional(
       v.object({
-        platform: v.union(v.literal('notion'), v.literal('asana'), v.literal('clickup')),
+        platform: v.union(
+          v.literal('notion'),
+          v.literal('asana'),
+          v.literal('clickup')
+        ),
         externalId: v.string(),
         externalUrl: v.string(),
         syncedAt: v.number(),
@@ -63,7 +67,7 @@ export const createInternalTask = mutation({
     if (!args.threadId) {
       throw new Error('threadId is required for task creation');
     }
-    
+
     return ctx.db.insert('tasks', {
       createdById: args.createdById,
       title: args.title,
@@ -94,10 +98,13 @@ export const createNotionTask: any = action({
     const currentUser = await getCurrentUserFromAuth(ctx);
 
     // Get Notion integration configuration
-    const integration = await ctx.runQuery(api.integrations.getByTeamAndPlatform, { 
-      teamId: args.teamId,
-      platform: 'notion' 
-    });
+    const integration = await ctx.runQuery(
+      api.integrations.getByTeamAndPlatform,
+      {
+        teamId: args.teamId,
+        platform: 'notion',
+      }
+    );
 
     if (!integration || !integration.isActive) {
       throw new Error('Notion integration not configured');
@@ -127,7 +134,9 @@ export const createNotionTask: any = action({
           Status: { select: { name: 'To Do' } },
           Priority: { select: { name: 'Medium' } },
           ...(args.dueDate && {
-            'Due Date': { date: { start: new Date(args.dueDate).toISOString() } },
+            'Due Date': {
+              date: { start: new Date(args.dueDate).toISOString() },
+            },
           }),
           ...(args.assignedTo && {
             Assignee: { people: [{ id: args.assignedTo }] },
@@ -180,10 +189,13 @@ export const createAsanaTask: any = action({
     const currentUser = await getCurrentUserFromAuth(ctx);
 
     // Get Asana integration configuration
-    const integration = await ctx.runQuery(api.integrations.getByTeamAndPlatform, { 
-      teamId: args.teamId,
-      platform: 'asana' 
-    });
+    const integration = await ctx.runQuery(
+      api.integrations.getByTeamAndPlatform,
+      {
+        teamId: args.teamId,
+        platform: 'asana',
+      }
+    );
 
     if (!integration || !integration.isActive) {
       throw new Error('Asana integration not configured');
@@ -221,10 +233,13 @@ export const createClickUpTask: any = action({
     const currentUser = await getCurrentUserFromAuth(ctx);
 
     // Get ClickUp integration configuration
-    const integration = await ctx.runQuery(api.integrations.getByTeamAndPlatform, { 
-      teamId: args.teamId,
-      platform: 'clickup' 
-    });
+    const integration = await ctx.runQuery(
+      api.integrations.getByTeamAndPlatform,
+      {
+        teamId: args.teamId,
+        platform: 'clickup',
+      }
+    );
 
     if (!integration || !integration.isActive) {
       throw new Error('ClickUp integration not configured');
@@ -322,7 +337,9 @@ export const listTasks = query({
 
     let query = ctx.db
       .query('tasks')
-      .withIndex('by_creator', (q: any) => q.eq('createdById', currentUser._id));
+      .withIndex('by_creator', (q: any) =>
+        q.eq('createdById', currentUser._id)
+      );
 
     // Filter by status if specified
     if (args.status) {
@@ -335,13 +352,15 @@ export const listTasks = query({
     if (args.assignedTo) {
       query = ctx.db
         .query('tasks')
-        .withIndex('by_assignee', (q: any) => q.eq('assignedTo', args.assignedTo));
+        .withIndex('by_assignee', (q: any) =>
+          q.eq('assignedTo', args.assignedTo)
+        );
     }
 
     const tasks = await query.order('desc').take(args.limit || 50);
 
     // Filter tasks by teamId in memory since we don't have teamId index
-    return tasks.filter(task => {
+    return tasks.filter((task) => {
       // For now, we'll need to get the creator's team
       // This is a temporary solution - proper indexing should be added
       return true; // Simplified for now

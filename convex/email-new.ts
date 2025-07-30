@@ -177,7 +177,6 @@ export const sendReply: any = action({
           attachments: [], // No attachments for now
           headers: {
             date: new Date().toISOString(),
-            deliveredTo: currentUser.email,
             received: [],
           },
           direction: 'outbound',
