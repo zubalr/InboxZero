@@ -1,24 +1,46 @@
 {
-  "name": "InboxZero",
+  "name": "inboxzero",
+  "version": "0.1.0",
   "private": true,
-  "workspaces": [
-    "apps/*",
-    "packages/*"
-  ],
   "scripts": {
-    "dev": "turbo dev",
-    "build": "turbo build",
-    "check-types": "turbo check-types",
-    "dev:native": "turbo -F native dev",
-    "dev:web": "turbo -F web dev",
-    "dev:server": "turbo -F @InboxZero/backend dev",
-    "dev:setup": "turbo -F @InboxZero/backend dev:setup"
+    "dev": "next dev --turbopack",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint",
+    "test": "vitest",
+    "test:ui": "vitest --ui",
+    "test:run": "vitest run",
+    "test:coverage": "vitest run --coverage"
   },
   "dependencies": {
-    "task-master-ai": "^0.22.0"
+    "@ai-sdk/cerebras": "^0.2.16",
+    "@convex-dev/auth": "^0.0.87",
+    "@convex-dev/resend": "^0.1.7",
+    "ai": "^4.3.19",
+    "convex": "^1.25.4",
+    "next": "15.4.5",
+    "react": "^19.1.1",
+    "react-dom": "^19.1.1"
   },
   "devDependencies": {
-    "turbo": "^2.5.4"
+    "@tailwindcss/postcss": "^4",
+    "@testing-library/jest-dom": "^6.6.4",
+    "@testing-library/react": "^16.3.0",
+    "@testing-library/user-event": "^14.6.1",
+    "@types/node": "^20",
+    "@types/react": "^19",
+    "@types/react-dom": "^19",
+    "@typescript-eslint/eslint-plugin": "^8",
+    "@typescript-eslint/parser": "^8",
+    "@vitest/ui": "^3.2.4",
+    "convex-test": "^0.0.38",
+    "eslint": "^9",
+    "eslint-config-next": "^15.4.5",
+    "happy-dom": "^18.0.1",
+    "jsdom": "^26.1.0",
+    "tailwindcss": "^4",
+    "typescript": "^5",
+    "vitest": "^3.2.4"
   },
-  "packageManager": "bun@1.2.18"
+  "packageManager": "bun@1.2.8"
 }
