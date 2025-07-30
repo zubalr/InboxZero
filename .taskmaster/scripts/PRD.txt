@@ -1,0 +1,111 @@
+# Overview
+InboxZero AI is a SaaS email platform for teams, designed to eliminate inbox clutter and accelerate collaborative workflows. It solves the problem of chaotic, inefficient shared inboxes (like support@ or sales@) where accountability is low and response times are high. It's built for small to medium-sized teams in customer support, sales, and project management who are overwhelmed by email volume and lack the tools for effective team collaboration within their existing email clients. The platform's value comes from combining real-time, on-the-record team collaboration (comments, assignments) with powerful AI assistance (summaries, smart replies, priority tagging), turning the inbox into a streamlined command center.
+
+# Core Features
+- **AI Email Summarization:**
+  - **What it does:** Automatically generates concise, bullet-point summaries of long email threads.
+  - **Why it's important:** Allows team members to get up to speed on complex conversations instantly without reading every message, saving significant time.
+  - **How it works:** When a thread is viewed, a Convex Action is triggered. This action securely calls the Groq or Cerebras API with the full thread content. The resulting summary is saved back to the Convex database and displayed in real-time at the top of the thread.
+
+- **Smart Reply Suggestions:**
+  - **What it does:** Generates context-aware reply drafts based on user-selected tones (e.g., Formal, Friendly).
+  - **Why it's important:** Drastically reduces the time spent on writing repetitive replies and helps maintain a consistent team voice.
+  - **How it works:** A "Reply with AI" button triggers a Convex Action, sending the current email context and selected tone to the Groq API. The generated draft is returned directly to the user's reply editor. The final email is sent via the Convex Resend Component.
+
+- **Real-time Shared Inbox:**
+  - **What it does:** Provides a single inbox where teams can view, assign, and comment on emails in real-time.
+  - **Why it's important:** Creates a single source of truth, eliminates duplicate work, and provides full visibility into who is handling what.
+  - **How it works:** This feature is powered by Convex's reactive database. The UI subscribes to queries for emails and comments. When one user makes a change (e.g., adds a comment via a Convex Mutation), the data is updated, and all other connected team members see the change instantly without a page refresh.
+
+- **Task Creation from Emails:**
+  - **What it does:** Allows users to convert an email into a task in Notion or Asana with one click.
+  - **Why it's important:** Bridges the gap between communication and action, ensuring that tasks identified in emails are never dropped.
+  - **How it works:** A "Create Task" button calls a Convex Action. This action securely uses the appropriate API key (from Convex environment variables) to call the Notion or Asana API, creating a new task pre-populated with the email's subject and a link back to the thread.
+
+# User Experience
+- **User Personas:**
+  - **Sarah, Customer Support Lead:** Manages a team of 5 agents handling `support@company.com`. Her biggest pain is ensuring critical tickets are answered quickly and that her team isn't stepping on each other's toes. She needs visibility and efficiency.
+  - **David, Sales Rep:** Collaborates with his manager on `sales@company.com`. He spends too much time writing similar follow-up emails and needs to quickly get context on deals his manager was handling.
+
+- **Key User Flows:**
+  1.  **Triage an Urgent Email:** An urgent email arrives from a key client. It's automatically tagged "Urgent" by the AI. Sarah sees it, adds a quick internal comment (`@David can you take this? they need pricing details`), and assigns it to David. All this happens in under 30 seconds.
+  2.  **Replying with AI Assistance:** David gets the assignment notification. He opens the thread and reads the AI summary to get instant context. He clicks "Reply with AI," selects a "Formal" tone, and gets a pre-written draft. He makes a small edit and sends the reply. The entire process takes less than two minutes.
+
+- **UI/UX Considerations:**
+  - The UI will be clean, fast, and uncluttered, using Tailwind CSS for a modern aesthetic.
+  - Real-time updates (typing indicators, new comments) should feel instantaneous and fluid.
+  - The distinction between internal team comments and external email replies must be visually obvious and impossible to confuse.
+
+# Technical Architecture
+- **System Components:**
+  - **Frontend:** React with Next.js, styled with Tailwind CSS. Interacts directly with the Convex client.
+  - **Backend & Database:** Convex. All server-side logic, data storage, and real-time synchronization are handled by Convex.
+  - **AI Processing:** Groq API (for low-latency tasks like smart replies) and Cerebras API (for high-quality summarization), called exclusively from Convex Actions.
+  - **Email Sending/Receiving:** Resend, integrated via the Convex Resend Component (for sending) and a Convex HTTP Action to handle Resend's Inbound Webhooks (for receiving).
+  - **Authentication:** Convex Auth (built-in email/password and social providers).
+  - **External Integrations:** Notion and Asana APIs, called exclusively from Convex Actions.
+
+- **Data Models (Convex Schema `convex/schema.ts`):**
+  - `threads`: Stores metadata for an email conversation. Includes `subject`, `teamId`, `assigneeId`, `priority`, `status`. Defines a `.searchIndex()` on the `subject` and filterable fields.
+  - `messages`: Stores individual emails. Includes `threadId`, `body`, `from`, `timestamp`. Defines a `.searchIndex()` on the `body`.
+  - `comments`: Internal team notes. Includes `threadId`, `userId`, `content`.
+  - `users`: User profiles. Includes `name`, `email`. Linked from Convex Auth.
+  - `teams`: Groups users together.
+  - `tasks`: Records links to tasks created in external systems.
+
+- **APIs and Integrations (Convex Functions `convex/`):**
+  - **Queries:** `threads.list`, `comments.listForThread` (real-time subscriptions). `threads.search` (for native full-text search).
+  - **Mutations:** `threads.assign`, `comments.add` (for atomic data updates).
+  - **Actions:** `ai.generateSummary`, `ai.generateReply` (call LLM APIs). `integrations.notion.createTask` (calls Notion API).
+  - **HTTP Actions:** A single endpoint in `convex/http.ts` to receive and process inbound email webhooks from Resend.
+
+- **Infrastructure Requirements:**
+  - All infrastructure is managed by Convex Cloud. No servers or databases to provision.
+  - Accounts needed: Convex, Resend, Groq/Cerebras, Notion (for development).
+
+# Development Roadmap
+- **Phase 1: The Collaborative Foundation (Core MVP)**
+  - **Scope:**
+    1.  **Setup & Auth:** Initialize Convex project, set up Convex Auth with email/password. Define core schemas (`users`, `teams`, `threads`, `messages`).
+    2.  **Email In/Out:** Implement the Resend inbound webhook via a Convex HTTP Action to receive emails. Create a basic UI to list and view threads/messages. Implement the Convex Resend Component to enable sending replies.
+    3.  **Real-time Collaboration:** Build the internal comments feature. A user must be able to add a comment to a thread and see it appear instantly for other team members.
+    4.  **Assignments:** Add functionality to assign a thread to a team member and have it update in real-time.
+
+- **Phase 2: The AI Layer**
+  - **Scope:**
+    1.  **AI Summarization:** Integrate the `ai.generateSummary` action with the Groq/Cerebras API. Display the summary in the UI.
+    2.  **Email Priority Tagging:** Implement the `ai.classifyEmail` action to automatically tag incoming emails and display the tags.
+    3.  **Smart Reply:** Build the "Reply with AI" modal and integrate the `ai.generateReply` action.
+
+- **Phase 3: Integrations and Polish**
+  - **Scope:**
+    1.  **Task Creation:** Build the Notion integration (`integrations.notion.createTask` action) and the corresponding UI sidebar.
+    2.  **Search:** Build the search bar UI that connects to the `threads.search` Convex query.
+    3.  **UX Refinements:** Add presence indicators ("Sarah is viewing..."), emoji reactions on comments, and general UI polish.
+
+# Logical Dependency Chain
+1.  **User Authentication (Foundation):** Must be built first using Convex Auth, as all other data (`teams`, `threads`) is tied to a user identity.
+2.  **Data Models & Ingestion (Visible Skeleton):** Define the core Convex schemas and implement the Resend inbound webhook. This allows us to get real emails into the system and immediately build a visible frontend to display them, creating a fast path to a demonstrable "thing".
+3.  **Core Collaboration Loop (Usable MVP):** Implement comments, assignments, and sending replies. This completes the core collaborative workflow, making the app usable for a team in a basic sense. This should be the primary goal for the first internal demo.
+4.  **Build AI Features (Atomic Additions):** Each AI feature (Summarize, Tag, Reply) can be built independently upon the stable foundation. Start with Summarization as it's the simplest to display and provides immediate value.
+5.  **Build Integrations (Extendable Features):** With the core app working, external integrations like Task Creation can be added without impacting core functionality.
+6.  **Search & Polish (Final Touches):** Implement search and other UX refinements last, as they improve a working application rather than being fundamental to its operation.
+
+# Risks and Mitigations
+- **Technical Risk:** LLM prompts for classification and summarization may be unreliable at first.
+  - **Mitigation:** Start with very simple, robust prompts. Log AI inputs and outputs in Convex (during development) to quickly analyze failures and refine the prompts. Build a user feedback mechanism (thumbs up/down on priority tags) from day one.
+
+- **Scope Risk:** The MVP feature set is ambitious.
+  - **Mitigation:** Follow the Logical Dependency Chain strictly. Be ruthless about cutting features from Phase 1 if time is short. The absolute "must-have" is the real-time collaboration loop (In -> Comment -> Assign -> Out). AI can be layered on top of a working foundation.
+
+- **Resource Risk:** The free tiers of AI APIs (Groq, Cerebras) may have rate limits that are hit during heavy development or testing.
+  - **Mitigation:** Implement caching for AI results in the Convex database (e.g., don't re-summarize a thread unless new messages are added). Add basic error handling and retry logic with exponential backoff in the Convex Actions that call these APIs.
+
+# Appendix
+- **Technical Specifications:**
+  - **Convex Client Version:** Latest (`^1.x.x`)
+  - **React Version:** 18+
+  - **Node.js Version:** 18+ (as required by Convex)
+- **Research Findings:**
+  - Convex's built-in full-text search is sufficient for the MVP and removes the complexity and cost of an external service like Meilisearch or Elasticsearch.
+  - Groq's API offers extremely low latency, making it ideal for interactive features like Smart Reply. Cerebras offers high-quality generation for less time-sensitive tasks like the initial summary.

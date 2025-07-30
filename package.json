@@ -14,7 +14,9 @@
     "dev:server": "turbo -F @InboxZero/backend dev",
     "dev:setup": "turbo -F @InboxZero/backend dev:setup"
   },
-  "dependencies": {},
+  "dependencies": {
+    "task-master-ai": "^0.22.0"
+  },
   "devDependencies": {
     "turbo": "^2.5.4"
   },
