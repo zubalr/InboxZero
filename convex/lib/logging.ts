@@ -536,12 +536,5 @@ export function withDatabaseLogging<T>(
   };
 }
 
-// Cleanup old logs periodically
-if (typeof setInterval !== 'undefined') {
-  setInterval(
-    () => {
-      logger.clearOldLogs(7 * 24 * 60 * 60 * 1000); // Keep logs for 7 days
-    },
-    24 * 60 * 60 * 1000
-  ); // Run daily
-}
+// Note: Cleanup would be handled by a scheduled function in production
+// setInterval is not available in Convex runtime environment

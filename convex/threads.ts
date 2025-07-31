@@ -706,7 +706,13 @@ export const searchThreads = query({
         lastMessageAt: v.number(),
         createdAt: v.number(),
         snippet: v.optional(v.string()),
-        matchType: v.optional(v.string()),
+        matchType: v.optional(
+          v.union(
+            v.literal('subject'),
+            v.literal('content'),
+            v.literal('participant')
+          )
+        ),
         relevanceScore: v.optional(v.number()),
       })
     ),
@@ -894,7 +900,7 @@ export const searchThreads = query({
         lastMessageAt: thread.lastMessageAt,
         createdAt: thread.createdAt,
         snippet,
-        matchType,
+        matchType: matchType as 'subject' | 'content' | 'participant',
         relevanceScore,
       };
     });
@@ -939,7 +945,13 @@ export const searchMessages = query({
         direction: v.union(v.literal('inbound'), v.literal('outbound')),
         createdAt: v.number(),
         snippet: v.optional(v.string()),
-        matchType: v.optional(v.string()),
+        matchType: v.optional(
+          v.union(
+            v.literal('subject'),
+            v.literal('content'),
+            v.literal('participant')
+          )
+        ),
         relevanceScore: v.optional(v.number()),
       })
     ),
@@ -1098,7 +1110,7 @@ export const searchMessages = query({
         direction: message.direction,
         createdAt: message.createdAt,
         snippet,
-        matchType,
+        matchType: matchType as 'subject' | 'content' | 'participant',
         relevanceScore,
       };
     });

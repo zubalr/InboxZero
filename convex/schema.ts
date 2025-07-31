@@ -13,7 +13,7 @@ export default defineSchema({
     teamId: v.optional(v.id('teams')),
     role: v.union(v.literal('admin'), v.literal('member'), v.literal('viewer')),
     isActive: v.boolean(),
-    lastActiveAt: v.number(), // timestamp
+    lastActiveAt: v.float64(), // timestamp
     preferences: v.optional(
       v.object({
         emailNotifications: v.boolean(),
@@ -29,6 +29,49 @@ export default defineSchema({
     .index('by_email', ['email'])
     .index('by_team', ['teamId'])
     .index('by_team_and_active', ['teamId', 'isActive']),
+
+  // Email account connections for OAuth integration
+  emailAccounts: defineTable({
+    userId: v.id('users'),
+    provider: v.union(v.literal('gmail'), v.literal('outlook')),
+    email: v.string(),
+    displayName: v.optional(v.string()),
+    accessToken: v.string(), // Encrypted
+    refreshToken: v.optional(v.string()), // Encrypted
+    tokenExpiry: v.optional(v.number()),
+    isActive: v.boolean(),
+    lastSyncAt: v.optional(v.number()),
+    syncStatus: v.union(
+      v.literal('active'),
+      v.literal('connected'),
+      v.literal('error'),
+      v.literal('disabled')
+    ),
+    syncError: v.optional(v.string()),
+    settings: v.optional(
+      v.object({
+        syncFrequency: v.optional(v.number()), // in minutes
+        syncLabels: v.optional(v.array(v.string())), // Gmail labels or Outlook folders to sync
+        autoReply: v.optional(v.boolean()),
+        forwardingRules: v.optional(
+          v.array(
+            v.object({
+              condition: v.string(),
+              action: v.string(),
+            })
+          )
+        ),
+        webhookConfig: v.optional(v.any()), // Store webhook/subscription config
+      })
+    ),
+    createdAt: v.number(),
+    updatedAt: v.number(),
+  })
+    .index('by_user', ['userId'])
+    .index('by_sync_status', ['syncStatus'])
+    .index('by_provider', ['provider'])
+    .index('by_email', ['email'])
+    .index('by_user_provider', ['userId', 'provider']),
 
   // Team/organization management
   teams: defineTable({

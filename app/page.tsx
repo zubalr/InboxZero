@@ -1,16 +1,15 @@
 'use client';
 
-import { useQuery } from 'convex/react';
-import { api } from '../convex/_generated/api';
+import { useIsAuthenticated } from './lib/use-user-data';
 import { AuthPage } from './components/auth/AuthPage';
 import { AuthGuard } from './components/auth/AuthGuard';
 import { InboxLayout } from './components/inbox/InboxLayout';
 
 export default function Home() {
-  const currentUser = useQuery(api.users.getCurrentUser);
+  const { isAuthenticated, isLoading, user } = useIsAuthenticated();
 
-  // Loading state
-  if (currentUser === undefined) {
+  // Loading state - show spinner only if we have no cached data
+  if (isLoading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-blue-500"></div>
@@ -19,7 +18,7 @@ export default function Home() {
   }
 
   // Not authenticated - show auth page
-  if (currentUser === null) {
+  if (!isAuthenticated || !user) {
     return <AuthPage />;
   }
 

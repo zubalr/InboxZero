@@ -253,7 +253,10 @@ export function ThreadView({ threadId, teamId, onClose }: ThreadViewProps) {
         <div className="flex-1 flex flex-col">
           {/* Messages list */}
           <div className="flex-1 overflow-y-auto bg-gray-50">
-            <MessageList messages={messages} currentUser={currentUser!} />
+            <MessageList
+              messages={messages.messages}
+              currentUser={currentUser!}
+            />
           </div>
 
           {/* Message composer */}

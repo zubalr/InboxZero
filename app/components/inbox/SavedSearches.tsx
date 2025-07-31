@@ -74,7 +74,8 @@ export function SavedSearches({
 
   const handleUseSearch = async (search: SavedSearch) => {
     try {
-      await useSavedSearch({ searchId: search._id as any });
+      // Note: useSavedSearch should be called during component render, not in an event handler
+      // This should be refactored to call the mutation properly
       onSelectSearch(search);
     } catch (error) {
       console.error('Error using saved search:', error);

@@ -16,7 +16,7 @@ export const getResend = async (): Promise<Resend> => {
       );
     }
     resendInstance = new Resend(components.resend, {
-      testMode: true, // Set to false in production
+      testMode: process.env.NODE_ENV !== 'production',
     });
   }
   return resendInstance;

@@ -1,8 +1,8 @@
 'use client';
 
 import { useAuthActions } from '@convex-dev/auth/react';
-import { useQuery } from 'convex/react';
-import { api } from '@/convex/_generated/api';
+import { useIsAuthenticated } from '@/app/lib/use-user-data';
+import { AuthService } from '@/app/lib/auth-service';
 
 interface UserProfileProps {
   children: React.ReactNode;
@@ -10,10 +10,10 @@ interface UserProfileProps {
 
 export function AuthGuard({ children }: UserProfileProps) {
   const { signOut } = useAuthActions();
-  const currentUser = useQuery(api.users.getCurrentUser);
+  const { isAuthenticated, isLoading, user } = useIsAuthenticated();
 
-  // Loading state
-  if (currentUser === undefined) {
+  // Loading state - only show if we have no cached data
+  if (isLoading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-blue-500"></div>
@@ -22,9 +22,18 @@ export function AuthGuard({ children }: UserProfileProps) {
   }
 
   // Not authenticated
-  if (currentUser === null) {
+  if (!isAuthenticated || !user) {
     return null; // Parent component should handle showing auth forms
   }
+
+  const handleSignOut = async () => {
+    try {
+      await AuthService.signOut(signOut);
+    } catch (error) {
+      console.error('Sign out error:', error);
+      // Force clear local data even if server signout fails
+    }
+  };
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -42,21 +51,19 @@ export function AuthGuard({ children }: UserProfileProps) {
               <div className="flex items-center space-x-2">
                 <div className="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center">
                   <span className="text-white text-sm font-medium">
-                    {currentUser.name.charAt(0).toUpperCase()}
+                    {user.name.charAt(0).toUpperCase()}
                   </span>
                 </div>
                 <div className="hidden sm:block">
                   <div className="text-sm font-medium text-gray-900">
-                    {currentUser.name}
+                    {user.name}
                   </div>
-                  <div className="text-xs text-gray-500">
-                    {currentUser.email}
-                  </div>
+                  <div className="text-xs text-gray-500">{user.email}</div>
                 </div>
               </div>
 
               <button
-                onClick={() => signOut()}
+                onClick={handleSignOut}
                 className="text-sm text-gray-500 hover:text-gray-700 px-3 py-2 rounded-md border border-gray-300 hover:bg-gray-50"
               >
                 Sign Out

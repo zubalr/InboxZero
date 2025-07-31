@@ -216,24 +216,27 @@ export const cleanupOldData = action({
 
     try {
       // Find old threads
-      const oldThreads: any[] = await ctx.runQuery(api.threads.listThreads, {
+      const oldThreadsResult = await ctx.runQuery(api.threads.listThreads, {
         limit: 1000, // Process in batches
       });
+      const oldThreads = oldThreadsResult.threads;
 
       const threadsToCleanup: Array<{
         threadId: Id<'threads'>;
         lastMessageAt: number;
-      }> = oldThreads.filter(
-        (thread: any) =>
-          thread.lastMessageAt < cutoffDate && thread.status === 'archived'
-      );
+      }> = oldThreads
+        .filter(
+          (thread: any) =>
+            thread.lastMessageAt < cutoffDate && thread.status === 'archived'
+        )
+        .map((thread: any) => ({
+          threadId: thread._id,
+          lastMessageAt: thread.lastMessageAt,
+        }));
       if (dryRun) {
         return {
           dryRun: true,
-          threadsToCleanup: threadsToCleanup.map((t: any) => ({
-            threadId: t._id,
-            lastMessageAt: t.lastMessageAt,
-          })),
+          threadsToCleanup: threadsToCleanup,
           messagesDeleted: 0,
           threadsDeleted: 0,
         };
@@ -312,17 +315,19 @@ export const validateDataIntegrity = action({
 
     try {
       // Get threads to check
-      const threads: any[] = await ctx.runQuery(api.threads.listThreads, {
+      const threadsResult = await ctx.runQuery(api.threads.listThreads, {
         limit: 1000,
       });
+      const threads = threadsResult.threads;
 
       for (const thread of threads) {
         threadsChecked++;
 
         // Check if thread has messages
-        const messages: any[] = await ctx.runQuery(api.messages.listForThread, {
+        const messagesResult = await ctx.runQuery(api.messages.listForThread, {
           threadId: thread._id,
         });
+        const messages = messagesResult.messages;
 
         messagesChecked += messages.length;
 

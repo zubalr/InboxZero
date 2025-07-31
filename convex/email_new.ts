@@ -174,10 +174,8 @@ export const sendReply: any = action({
           subject: args.subject,
           textContent: textContent,
           htmlContent: htmlContent,
-          attachments: [], // No attachments for now
           headers: {
             date: new Date().toISOString(),
-            received: [],
           },
           direction: 'outbound',
           deliveryStatus: {
@@ -185,7 +183,6 @@ export const sendReply: any = action({
             attempts: 1,
             lastAttemptAt: Date.now(),
           },
-          searchContent: `${args.subject} ${textContent}`,
         }
       );
 

@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useRef, useCallback } from 'react';
-import { useMutation, useQuery } from 'convex/react';
+import { useAction, useMutation, useQuery } from 'convex/react';
 import { api } from '@/convex/_generated/api';
 import type { Id } from '@/convex/_generated/dataModel';
 
@@ -59,7 +59,7 @@ export function MessageComposer({
   const draftTimer = useRef<NodeJS.Timeout | null>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
-  const sendReply = useMutation(api.email.sendReply);
+  const sendReply = useAction(api.email.sendReply);
 
   // Extract reply recipients from thread participants
   const fromParticipant = thread.participants.find((p) => p.type === 'from');
